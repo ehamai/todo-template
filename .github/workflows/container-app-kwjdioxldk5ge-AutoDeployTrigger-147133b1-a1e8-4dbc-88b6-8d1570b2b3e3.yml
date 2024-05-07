@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-kwjdioxldk5ge
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'server/**'
+    - '.github/workflows/container-app-kwjdioxldk5ge-AutoDeployTrigger-147133b1-a1e8-4dbc-88b6-8d1570b2b3e3.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPKWJDIOXLDK5GE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPKWJDIOXLDK5GE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPKWJDIOXLDK5GE_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/server 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPKWJDIOXLDK5GE_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPKWJDIOXLDK5GE_REGISTRY_PASSWORD }}
+          containerAppName: container-app-kwjdioxldk5ge
+          resourceGroup: todotemplatea65a
+          imageToBuild: default/container-app-kwjdioxldk5ge:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
